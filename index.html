@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LIFF Stripe Checkout</title>
+</head>
+
+<body>
+  <script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
+  <script src="https://js.stripe.com/v3"></script>
+
+  <button
+    style="background-color:#6772E5;color:#FFF;padding:8px 12px;border:0;border-radius:4px;font-size:1em;cursor:pointer"
+    id="checkout-button" role="link" type="button">
+    Stripeで支払う
+  </button>
+
+  <div id="error-message"></div>
+
+  <script>
+    liff.init({ liffId: "1660815275-DZgqJnlP" })  // LIFF ID を入れる。
+      .catch((err) => {
+        console.log(err);
+      })
+
+    liff.ready.then(() => {
+      if (!liff.isLoggedIn()) {
+        liff.login();
+      }
+      var idToken = liff.getDecodedIDToken();
+      var userId = idToken.sub;
+      var email = idToken.email;
+
+
+      // Stripe
+      var stripe = Stripe('pk_test_51MqQpzHQDAkHoIdseOdG4Gj9mEwzWQjoOHLwQoSJuiUvBG49PMrpCskGBJk2cfG1tO0Un5OrP4zsTcpYYTDyzFEW00rqlUKk8I'); // Stripeの公開キー(STRIPE_PUBLIC_KEY)
+
+      var checkoutButton = document.getElementById('checkout-button');
+      checkoutButton.addEventListener('click', function () {
+
+        stripe.redirectToCheckout({
+          lineItems: [{ price: '<YOUR_PRICE_ID>', quantity: 1 }],
+          mode: 'subscription',
+          successUrl: `${location.origin}/success?id={price_1MrOZ2HQDAkHoIdspqUqxFo3}`,  // 公開したい商品の価格ID(CHECKOUT_SESSION_ID)
+          cancelUrl: `${location.origin}/cancel`,
+          clientReferenceId: userId,  // LINEのユーザーID
+          customerEmail: email, // LINEから取得したメールアドレス
+          locale: "ja",
+          submitType: "pay"
+        })
+          .then(function (result) {
+            if (result.error) {
+              var displayError = document.getElementById('error-message');
+              displayError.textContent = result.error.message;
+            }
+          });
+      });
+
+    })
+  </script>
+
+</body>
+
+</html>
