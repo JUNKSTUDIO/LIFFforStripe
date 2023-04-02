@@ -23,18 +23,35 @@
   <script>
     liff.use(new StripeCheckoutButtonPlugin());
     liff.init({
-      liffId: '1660815320-ZgXg8RxL'// LIFF ID を入れる。
+      liffId: '1660815320-ZgXg8RxL', // LIFF ID を入れる。
+      withLoginOnExternalBrowser: true, // 自動ログイン処理を有効にする 試し
     })
       .catch((err) => {
         console.log(err);
       });
     liff.ready.then(() => {
+      // ログインコールは外部ブラウザまたはLINEのアプリ内ブラウザ使用時のみ。
       if (!liff.isLoggedIn()) {
         liff.login();
+        // ドメイン名とパス（https://example.com/path）がエンドポイントURLと一致しているか検証します。
+        // liff.login({ redirectUri: 'https://example.com/path' });
       }
       const idToken = liff.getDecodedIDToken();
+      // const idToken = liff.getIDToken();
       const userId = idToken.sub;
       const email = idToken.email;
+
+      console.log(liff.getLanguage());
+      console.log(liff.getVersion());
+      console.log(liff.isInClient());
+      console.log(liff.isLoggedIn());
+      console.log(liff.getOS());
+      console.log(liff.getLineVersion());
+
+      console.log("====");
+      console.log(idToken);
+      console.log(userId);
+      console.log(email);
 
       const button = document.getElementById('checkout-button');
       liff.$stripeCheckoutButton.init({
@@ -42,6 +59,8 @@
       });
       liff.$stripeCheckoutButton.bind(button, {
         priceId: 'price_1MrOZ2HQDAkHoIdspqUqxFo3', // Stripeの商品の価格ID<YOUR_PRICE_ID>
+        // priceId: 'price_1MsIVLHQDAkHoIds897e59bw', // Stripeの商品の価格ID<YOUR_PRICE_ID>
+        mode: 'subscription',
         quantity: 1,
         successUrl: `${location.origin}/success?id={CHECKOUT_SESSION_ID}`,
         cancelUrl: `${location.origin}/cancel`,
